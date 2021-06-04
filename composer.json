@@ -1,0 +1,28 @@
+{
+    "name": "ptk-adtech/api-rest",
+    "description": "curl based rest api call/parse",
+    "type": "library",
+    "require-dev": {
+        "phpunit/phpunit": "^8.5",
+        "symfony/yaml": "^5.3"
+    },
+    "authors": [
+        {
+            "name": "yg.song",
+            "email": "yg1.song@cheilpengtai.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "ApiRest\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "ApiRest\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "phpunit --verbose --colors --testdox"
+    }
+}

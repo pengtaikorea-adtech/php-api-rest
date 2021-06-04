@@ -1,0 +1,33 @@
+respok:
+  raw: >
+    Server: myracloud
+    Date: Fri, 04 Jun 2021 11:25:48 GMT
+    Content-Type: text/html; charset=utf-8
+    Transfer-Encoding: chunked
+    Content-language: en
+    Permissions-Policy: interest-cohort=()
+    X-Frame-Options: SAMEORIGIN
+    Link: <https://www.php.net/array-diff-key>; rel=shorturl
+    Last-Modified: Fri, 04 Jun 2021 11:01:24 GMT
+    vary: accept-encoding
+    Expires: Fri, 04 Jun 2021 11:25:48 GMT
+    Cache-Control: max-age=0
+    Connection: Keep-Alive
+    Content-Encoding: gzip
+    Set-Cookie: LAST_LANG=en; expires=Sat, 04-Jun-2022 11:25:48 GMT; Max-Age=31536000; path=/; domain=.php.net
+
+
+    {"hello": "world"}
+  info:
+    response_code: 200
+    header_size: 564
+
+  expect:
+    header:
+      Server: myracloud
+      Transfer-Encoding: chunked
+      Content-language: en
+      vary: accept-encoding
+    json:
+      hello: world
+    
