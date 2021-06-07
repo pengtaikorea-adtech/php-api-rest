@@ -42,9 +42,9 @@ else if($response->error()) {
 ```
 
 
-### Quickest Client implementation
+### Quickest Client implementation (NOT YET)
 
-So simple.
+Not yet implemented, but designed how to would be like as below:
 
 - QuickApiClient.php
 	```php
@@ -90,7 +90,7 @@ So simple.
 
 
 
-### TO build RestAPI Client
+### TO build RestAPI Client (NOT YET)
 
 Singleton, or Dependency injection, applicable many designs with trait setup
 

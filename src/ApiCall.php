@@ -23,7 +23,10 @@ class ApiCall {
 		// initialize curl session
 		$this->_session = curl_init($url);
 		// convert options
-		$this->_options = array_merge(cURL::SINGLE_DEFAULTS,cURL::Converts($options));
+		$this->_options = cURL::Converts($options);
+		foreach(cURL::SINGLE_DEFAULTS as $dk=>$dv) {
+			$this->_options[$dk] = $dv;
+		}
 	}
 
 	public function __get($name) {
@@ -40,8 +43,8 @@ class ApiCall {
 
 	public function __set($name, $value) {
 		$key = cURL::Key($name);
-		// valid key
-		if($key!=0) {
+		// key validity
+		if($key!=0 && !array_key_exists($key, cURL::SINGLE_DEFAULTS)) {
 			if($value==null && array_key_exists($key, $this->_options)) {
 				delete($this->_options[$key]);
 			} else {
@@ -70,7 +73,13 @@ class ApiCall {
 		// set method
 		$method = strtoupper($method);
 		// clear method options
-		$this->_options = array_diff($this->_options, cURL::METHOD_OPTIONS);
+		foreach(cURL::METHOD_OPTIONS as $mk=>$mv) {
+			if(array_key_exists($mk, $this->_options)) {
+				delete($this->_options[$mk]);
+			}
+		}
+		// $this->_options = array_diff($this->_options, cURL::METHOD_OPTIONS);
+
 
 		// set request method
 		switch($method) {
@@ -85,7 +94,7 @@ class ApiCall {
 		}
 
 		// build request for later use
-		$this->_request = new Request($url, 
+		$this->_request = new Request($this->_location, 
 			$this->_options[CURLOPT_HTTPHEADER] ?? [], 
 			$this->_options[CURLOPT_COOKIE] ?? []);
 
@@ -94,10 +103,16 @@ class ApiCall {
 
 		// send
 		$responsed = curl_exec($this->_session);
-
-		// build response to return
-		$this->_response = new Response($responsed, $curl_getinfo($this->_session));
-
+		$info = curl_getinfo($this->_session);
+		// on OK:
+		if($responsed!==false) {
+			$this->_response = new Response($responsed, $info);
+		} else {
+			$err = curl_error($this->_session);
+			// set header parsing to 0
+			$info[cURL::KEY_INFO_HEADER_LENGTH] = '0';
+			$this->_response = new Response($err, $info);
+		}
 		return $this->_response;
 	}
 
@@ -115,6 +130,10 @@ class ApiCall {
 		return $this->send(Http::METHOD_GET);
 	}
 
+	public function options() {
+		return $this->_options;
+	}
+
 	/**
 	 * sending other methods
 	 */
@@ -124,6 +143,7 @@ class ApiCall {
 		case Http::METHOD_GET:
 			return $this->get();
 		case 'DEL':
+		case 'DELETE':
 			$name = Http::METHOD_DEL;
 		case Http::METHOD_POST:
 		case Http::METHOD_PUT:
@@ -131,8 +151,6 @@ class ApiCall {
 			$this->_options[CURLOPT_POSTFIELDS] = http_build_query($this->_params);
 			return $this->send($name);
 		}
-
-		// ...
 	}
 
 }

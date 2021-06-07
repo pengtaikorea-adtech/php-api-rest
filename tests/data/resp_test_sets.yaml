@@ -1,5 +1,5 @@
 respok:
-  raw: >
+  raw: |
     Server: myracloud
     Date: Fri, 04 Jun 2021 11:25:48 GMT
     Content-Type: text/html; charset=utf-8
@@ -19,13 +19,13 @@ respok:
 
     {"hello": "world"}
   info:
-    response_code: 200
-    header_size: 564
+    http_code: '200'
+    header_size: '550'
 
   expect:
     header:
-      Server: myracloud
-      Transfer-Encoding: chunked
+      server: myracloud
+      Transfer-encoding: chunked
       Content-language: en
       vary: accept-encoding
     json:

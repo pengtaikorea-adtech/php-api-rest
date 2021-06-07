@@ -1,0 +1,16 @@
+- raw: |
+    Sample: ASDF
+    Value: True
+  expect:
+    sample: "ASDF"
+    value: "True"
+- raw: |
+    Hello: World
+    인사: 안녕하세요
+  expect: 
+    hello: World
+    인사: 안녕하세요
+- raw: |
+    Integer: 1
+  expect:
+    integer: "1"

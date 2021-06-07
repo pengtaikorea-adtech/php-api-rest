@@ -9,22 +9,27 @@ class Response {
 	protected $_json;
 
 	public function __construct(string $response='', array $info=[]) {
-		$headerlen = intval($info[CURLINFO_HEADER_SIZE] ?? '0');
-		$this->_status = intval($info[CURLINFO_RESPONSE_CODE] ?? '0');
+		$headerlen = intval($info[cURL::KEY_INFO_HEADER_LENGTH] ?? '0');
+		$this->_status = intval($info[cURL::KEY_INFO_STATUS] ?? Http::STATUS_OK);
 		$this->_body = substr($response, $headerlen);
 		$this->_info = $info;
 
 		// build headers array
 		$headerText = substr($response, 0, $headerlen);
 		$this->_headers = Http::parseHeader($headerText);
-		
+
 		// build cookies array
 		$cookieText = $this->_headers['cookie'] ?? '';
+		// appending responsed cookies
+		foreach($this->header('set-cookie', true) ?? [] as $i=>$cookie) {
+
+		}
+		
 		$this->_cookies = Http::parseCookie($cookieText);
 	}
 
 	public function status() :int {
-		return $this->_status;
+		return $this->_status || $this->_info[cURL::KEY_INFO_STATUS];
 	}
 
 	// status ok
@@ -36,7 +41,7 @@ class Response {
 	 * if the call redirected. if redirected, returns >0. else, 0.
 	 */
 	public function redirected() :int {
-		return $this->_info[CURLINFO_REDIRECT_COUNT] ?? 0;
+		return $this->_info[cURL::KEY_INFO_REDIRECT_COUNT] ?? 0;
 	}
 
 	/**
@@ -54,11 +59,7 @@ class Response {
 	 * get cURL info. refer https://www.php.net/manual/en/function.curl-getinfo.php
 	 */
 	public function info($key) {
-		if(!is_int($key)) {
-			$key = strtoupper($key);
-			$key = eval("return CURLINFO_$key;");
-		}
-		return $this->_info[$key] ?? null;
+		return $this->_info[strtolower($key)] ?? null;
 	}
 
 	/**
@@ -87,7 +88,7 @@ class Response {
 			}
 		}
 
-		return $multiple ? null : $rets;
+		return $multiple ? $rets : null;
 	}
 
 	/**
@@ -120,7 +121,7 @@ class Response {
 	 */
 	public function json() {
 		if(!$this->_json) {
-			$this->_json = json_decode($this->_body);
+			$this->_json = json_decode($this->_body, true);
 		}
 		return $this->_json;
 	}
@@ -130,14 +131,15 @@ class Response {
 	 * @return object
 	 */
 	public function jsonObject() {
-		return json_decode($this->_body, true);
+		return json_decode($this->_body, false);
 	}
 
-	public function __str() {
+	public function __toString() {
 		return $this->text();
 	}
 
 	public function __get($name) {
-		return $this->json()[$name];
+		$dict = $this->json();
+		return $dict[$name] ?? null;
 	}
 }

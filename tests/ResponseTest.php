@@ -1,7 +1,7 @@
 <?php namespace ApiRest;
 
 class ResponseTest extends TestCase {
-	const responseTestSet = 'resp_test_sets.yaml';
+	const responseTestSet = './data/resp_test_sets.yaml';
 
 	protected function parseInfo(array $testset) {
 		$rets = [];
@@ -37,14 +37,14 @@ class ResponseTest extends TestCase {
 	public function testResponseOk() {
 		$testset = $this->fromYml(static::responseTestSet);
 		$_resp = $testset['respok'];
-		$resp = new Response($_resp['raw'], $this->parseInfo($_resp));
+		$resp = new Response($_resp['raw'], $_resp['info']);
 
 		$this->expectations($resp, $_resp);
 	}
 
 	public function testResponseRedirect() {
 		$resp = new Response('', [
-			CURLINFO_REDIRECT_COUNT => 1,
+			cURL::KEY_INFO_REDIRECT_COUNT => '1',
 		]);
 		$this->true(0<$resp->redirected());
 	}
@@ -52,15 +52,24 @@ class ResponseTest extends TestCase {
 	public function testResponseError() {
 		$message = 'error';
 		$respOK = new Response($message, [
-			CURLINFO_RESPONSE_CODE => Http::STATUS_OK,
+			cURL::KEY_INFO_STATUS => Http::STATUS_OK,
 		]);
 		$this->true($respOK->ok());
 		$this->true($respOK->error()==null);
 
 		$respErr = new Response($message, [
-			CURLINFO_RESPONSE_CODE => 501,
+			cURL::KEY_INFO_STATUS => 501,
 		]);
 		$this->false($respErr->ok());
 		$this->equals($respErr->error(), $message);
+	}
+
+	public function testResponseText() {
+		$message = 'error';
+		$respOK = new Response($message, [
+			cURL::KEY_INFO_STATUS => Http::STATUS_OK,
+		]);
+		$this->true($respOK->ok());
+		$this->equals($message, strval($respOK));
 	}
 }

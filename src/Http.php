@@ -21,12 +21,16 @@ class Http {
 	const URL_USER = 'user';
 	const URL_PASS = 'pass';
 
+	const HEADER_PATTERN = '/^\s*(?<key>.+):(?<val>.*)$/';
+	const COOKIE_PATTERN = '/^(?<key>.+)=(?<val>.*)$/';
+	const SETCOOKIE_PATTERN = '/^(?<key>[^;=]+)=(?<val>[^;]*);?/';
+
 	
 	public static function parseHeader(string $headerText) :array {
 		$headers = [];
 		$matches = [];
-		foreach(explode('\n', $headerText) as $ln=>$line) {
-			if(preg_match('/^(?<key>.+):(?<val>.*)$/', trim($line), $matches)) {
+		foreach(explode("\n", $headerText) as $ln=>$line) {
+			if(preg_match(static::HEADER_PATTERN, trim($line), $matches)) {
 				$key = strtolower(trim($matches['key'] ?? ''));
 				$val = trim($matches['val'] ?? '');
 				array_push($headers, [$key, $val]);
@@ -35,17 +39,33 @@ class Http {
 		return $headers;
 	}
 
+	/**
+	 * 
+	 */
 	public static function parseCookie(string $cookieText) :array {
 		$cookies = [];
 		$matches = [];
 		foreach(explode(';', $cookieText) as $ln=>$line) {
-			if(preg_match('/^(?<key>.+)=(?<val>.*)$/', trim($line), $matches)) {
+			if(preg_match(static::COOKIE_PATTERN, trim($line), $matches)) {
 				$key = trim($matches['key'] ?? '');
 				$val = trim($matches['val'] ?? '');
 				$cookies[$key] = $val;
 			}
 		}
 		return $cookies;
+	}
+
+	/**
+	 * 
+	 */
+	public static function loadSetCookie(string $setCookieText, array &$cookies) :bool {
+		$matches = [];
+		if(preg_match(static::SETCOOKIE_PATTERN, trim($setCookieText), $matches)) {
+			$cookies[$matches['key']] = trim($matches['val']);
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 

@@ -369,6 +369,33 @@ class cURL {
 		CURLOPT_CUSTOMREQUEST => null,
 	];
 
+	/* string key on curl_getinfo result array */
+	const KEY_INFO_LOCATION = 'url';
+	const KEY_INFO_MIMETYPE = 'content_type';
+	const KEY_INFO_STATUS = 'http_code';
+	const KEY_INFO_HEADER_LENGTH = 'header_size';
+	const KEY_INFO_REQUEST_LENGTH = 'request_size';
+	const KEY_INFO_FILETIME = 'filetime';
+	const KEY_INFO_SSL_VERIFY_RESUL = 'ssl_verify_result';
+	const KEY_INFO_CERT = 'certinfo';
+	const KEY_INFO_REDIRECT_COUNT = 'redirect_count';
+	const KEY_INFO_REDIRECT_URL = 'redirect_url';
+	const KEY_INFO_REMOTE_IP = 'primary_ip';
+	const KEY_INFO_REMOTE_PORT = 'primary_port';
+	const KEY_INFO_LOCAL_IP = 'local_ip';
+	const KEY_INFO_LOCAL_PORT = 'local_port';
+	const KEY_INFO_TOTAL_TIME = 'total_time';
+	const KEY_INFO_LOOKUP_TIME = 'namelookup_time';
+	const KEY_INFO_CONNECT_TIME = 'connect_time';
+	const KEY_INFO_PREPARE_TIME = 'pretransfer_time';
+	const KEY_INFO_START_TIMING = 'starttransfer_time';
+	const KEY_INFO_UPLOAD_SIZE = 'size_upload';
+	const KEY_INFO_UPLOAD_SPEED = 'speed_upload';
+	const KEY_INFO_UPLOAD_LENGTH = 'upload_content_length';
+	const KEY_INFO_DOWNLOAD_SIZE = 'size_download';
+	const KEY_INFO_DOWNLOAD_SPEED = 'speed_download';
+	const KEY_INFO_DOWNLOAD_LENGTH = 'download_content_length';
+
 	/* cURL setting options defaults.
 	 - if not listed here :
 		'bool' type defaults false

@@ -1,7 +1,25 @@
 <?php namespace ApiRest;
 
 class ApiCallTest extends TestCase {
-	public function testBuildApiCall() {
-		$this->true(true, "pass");
+	public function testBuildBlankApiCall() {
+		$api = new ApiCall();
+		$this->true($api !=null);
+	}
+
+	public function testApiCallGet() {
+		$location = 'http://pengtai.co.kr';
+		$call = new ApiCall($location);
+		// send get
+		$resp = $call->get();
+
+		// test it ok
+		if($resp->ok()) {
+			// show text
+			$this->true(0<strlen($resp->text()));
+		} else {
+			// show error message
+			echo $call->options().PHP_EOL;
+			$this->true(false, "http fail");
+		}
 	}
 }
