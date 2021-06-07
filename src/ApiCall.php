@@ -137,7 +137,7 @@ class ApiCall {
 	/**
 	 * sending other methods
 	 */
-	public function __invoke($name, $args) {
+	public function __call($name, $args) {
 		// sending methods
 		switch(strtoupper($name)) {
 		case Http::METHOD_GET:
