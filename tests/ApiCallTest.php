@@ -18,7 +18,7 @@ class ApiCallTest extends TestCase {
 			$this->true(0<strlen($resp->text()));
 		} else {
 			// show error message
-			echo $call->options().PHP_EOL;
+			var_dump($call->options());
 			$this->true(false, "http fail");
 		}
 	}

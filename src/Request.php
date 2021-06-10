@@ -1,37 +1,65 @@
 <?php namespace ApiRest;
 
 class Request {
-	protected $_url;
-	protected $_headers;
+	// cookie cache
 	protected $_cookies;
+	protected $_options;
 
-	public function __construct(string $location='', ?array $headers=[], $cookies='') {
-		$this->_url = $location;
-		$this->_headers = $headers ?? [];
-		if(is_string($cookies)) {
-			$this->_cookies = Http::parseCookie($cookies);
-		} else {
-			$this->_cookies = $cookies ?? [];
-		}
+	public function __construct(array $options) {
+		$this->_options = $options;
 	}
 
 	public function location():string {
-		return $this->_url ?? '';
+		return $this->_options[CURLOPT_URL];
 	}
 
 	public function headers():array {
-		return $this->_headers;
+		return $this->_options[CURLOPT_HTTPHEADER];
 	}
 
-	public function header(string $key): ?string {
-		return $this->_headers[$key] ?? null;
+	public function header(string $key) :string {
+		return Http::findHeader($this->headers(), $key);
 	}
 
-	public function cookies() {
+	public function headerValues(string $key) :array {
+		return Http::searchHeaders($this->headers(), $key);
+	}
+
+	public function appendHeader(string $key, string $value) {
+		array_push($this->_options[CURLOPT_HTTPHEADER], "$key: $value");
+	}
+
+	public function spliceHeader(string $key, ?string $value=null) {
+		$pattern = Http::headerSearchPattern($key);
+		$match = [];
+		$this->_options[CURLOPT_HTTPHEADER] = array_filter($this->headers(), 
+			function($line) use ($pattern, &$match) {
+				return !(preg_match($pattern, $line, $match) 
+					&& ($value===null || $value=trim($match['val'])));
+		});
+	}
+
+	public function replaceHeaders(array $headers) {
+		$this->_options[CURLOPT_HTTPHEADER] = $headers;
+	}
+
+	public function cookies():array {
+		if(!$this->_cookies) {
+			$this->_cookies = Http::parseCookie($this->_options[CURLOPT_COOKIE]) ?? [];
+		}
 		return $this->_cookies;
 	}
 
 	public function cookie(string $key): ?string {
-		return $this->_cookies[$key] ?? null;
+		$cookies = $this->cookies();
+		return $cookies[$key] ?? null;
+	}
+
+	public function setCookie(string $key, string $value)  {
+		$this->_cookies[$key] = $value;
+	}
+
+	public function unsetCookie(string $key) {
+		unset($this->_cookie[$key]);
 	}
 }

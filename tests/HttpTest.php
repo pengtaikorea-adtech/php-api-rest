@@ -13,13 +13,37 @@ class HttpTest extends TestCase {
 		}
 	}
 
-	
-
 	public function testParseHeaderRegexp() {
 		$match = [];
 		preg_match(Http::HEADER_PATTERN, 'MimeType: text/plain', $match);
 		$this->equals(trim($match['key']), 'MimeType');
 		$this->equals(trim($match['val']), 'text/plain');
+	}
+
+	public function testFindHeaderKeyRegexp() {
+		$key = "hello";
+		$pattern = Http::headerSearchPattern($key);
+		// exact match
+		$this->true(preg_match($pattern, "hello: world"));
+		// case insensitivity
+		$this->true(preg_match($pattern, "Hello: world"));
+		// case insensitivity + blank
+		$this->true(preg_match($pattern, "Hello :   world"));
+	}
+
+	public function testFindHeaderKey() {
+		$headers = [
+			"Hello: World",
+			"Hi : there ",
+		];
+		// case insensitivity
+		$world = Http::findHeader($headers, "Hello");
+		$this->equals($world, "World");
+		// blank
+		$there = Http::findHeader($headers, "hi");
+		$this->equals($there, "there");
+
+
 	}
 
 	public function testParseHeader() {

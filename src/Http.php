@@ -6,6 +6,13 @@ class Http {
 	const METHOD_PUT = 'PUT';
 	const METHOD_PATCH = 'PATCH';
 	const METHOD_DEL = 'DELETE';
+	const NAME_METHODS = [
+		self::METHOD_GET,
+		self::METHOD_POST,
+		self::METHOD_PUT,
+		self::METHOD_PATCH,
+		self::METHOD_DEL,
+	];
 
 	// HTTP STATUS CODE
 	const STATUS_OK = 200;
@@ -26,12 +33,15 @@ class Http {
 	const SETCOOKIE_PATTERN = '/^(?<key>[^;=]+)=(?<val>[^;]*);?/';
 
 	
+	/**
+	 * 
+	 */
 	public static function parseHeader(string $headerText) :array {
 		$headers = [];
 		$matches = [];
 		foreach(explode("\n", $headerText) as $ln=>$line) {
 			if(preg_match(static::HEADER_PATTERN, trim($line), $matches)) {
-				$key = strtolower(trim($matches['key'] ?? ''));
+				$key = trim($matches['key'] ?? '');
 				$val = trim($matches['val'] ?? '');
 				array_push($headers, [$key, $val]);
 			}
@@ -40,7 +50,52 @@ class Http {
 	}
 
 	/**
-	 * 
+	 * appending header array
+	 */
+	public static function appendHeader(array &$headers, string $key, string $value) {
+		$key = trim($key);
+		$value = trim($value);
+		array_push($headers, "$key: $value");
+		return $headers;
+	}
+
+	protected static function headerSearchPattern(string $key)  {
+		return "/^\s*$key\s*:(?<val>.*)$/i";
+	}
+
+	/**
+	 * find a (first) value that matches $key
+	 */
+	public static function findHeader(array $headers, string $key) :string {
+		$pattern = static::headerSearchPattern($key);
+		$match = [];
+		foreach($headers as $ln=>$entity) {
+			if(preg_match($pattern, $entity, $match)) {
+				return trim($match['val']);
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * search values that matches $key
+	 */
+	public static function searchHeaders(array $headers, string $key) :array {
+		$rets = [];
+		$match = [];
+		$pattern = static::headerSearchPattern($key);
+		foreach($headers as $ln=>$entity) {
+			if(preg_match($pattern, $entity, $match)) {
+				array_push(trim($match['val']));
+			}
+		}
+		return $rets;
+	}
+
+
+
+	/**
+	 * parse cookie value from cookie string
 	 */
 	public static function parseCookie(string $cookieText) :array {
 		$cookies = [];
@@ -107,5 +162,14 @@ class Http {
 			$hash ? '#': '',
 			$hash,
 		]);
+	}
+
+	public static function rebuildGetURI(string $baseUrl, ?array $getParams=null) {
+		$components = static::parseURI($baseUrl);
+		if($getParams) {
+			$components[static::URL_QUERY] = 
+				http_build_query($getParams, $components[static::URL_QUERY] ?? '');
+		}
+		return static::buildURI($components);
 	}
 }

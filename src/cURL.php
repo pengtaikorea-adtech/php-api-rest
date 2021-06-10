@@ -3,7 +3,7 @@
 class cURL {
 	/** OPTIONS 
 	 * : auto generated via https://www.php.net/manual/en/function.curl-setopt.php  
-	 * : with script ./curlopt.generate.js
+	 * : with script ../scripts/curlopt.generate.js
 	 * **/
 	const OPTIONS = [
 		/* true to automatically set the Referer: field in requests where it follows a Location: redirect. */
@@ -363,10 +363,10 @@ class cURL {
 	];
 
 	const METHOD_OPTIONS = [
-		CURLOPT_HTTPGET => null,
-		CURLOPT_POST => null,
-		CURLOPT_PUT => null,
-		CURLOPT_CUSTOMREQUEST => null,
+		CURLOPT_HTTPGET => [Http::METHOD_GET],
+		CURLOPT_POST => [Http::METHOD_POST],
+		CURLOPT_PUT => [Http::METHOD_PUT],
+		CURLOPT_CUSTOMREQUEST => [Http::METHOD_PATCH, Http::METHOD_DEL],
 	];
 
 	/* string key on curl_getinfo result array */
@@ -403,15 +403,11 @@ class cURL {
 		'string' type defaults ''
 	*/
 
-	const SINGLE_DEFAULTS = [
+	const OPTION_DEFAULTS = [
 		CURLOPT_HEADER=> true,
 		CURLOPT_COOKIE=> true,
 		CURLOPT_FOLLOWLOCATION=> true,
 		CURLOPT_RETURNTRANSFER =>  true,
-	];
-
-	const SESSION_DEFAULTS = [
-
 	];
 
 
@@ -447,5 +443,70 @@ class cURL {
 			return static::OPTIONS($option) == gettype($value);
 		} 
 		return false;
+	}
+
+	public static function setMethodOptions(string $method, array &$options) {
+		$method = strtoupper($method);
+		$hasMatch = false;
+		// clear method options
+		foreach(static::METHOD_OPTIONS as $mk=>$mvs) {
+			// should set but no
+			$methodMatched = in_array($method, $mvs);
+			$methodSetValue = $mk===CURLOPT_CUSTOMREQUEST ? $method : true;
+			$methodGetValue = $options[$mk] ?? null;
+
+			if($methodMatched) {
+				$hasMatch = true;
+				if($methodGetValue != $methodSetValue) {
+					$options[$mk] = $methodSetValue;
+				}
+			}
+			else if($methodGetValue!=null) {
+				unset($options[$mk]);
+			}
+		}
+
+		// if, has no match, return false
+		return $hasMatch ? $options : false;
+	}
+
+	public static function setLocationParams(string $method, array &$options, ?string $location=null, ?array $params=null) {
+		$method = strtoupper($method);
+		$location = $location ?? $options[CURLOPT_URL];
+		switch($method) {
+			case Http::METHOD_GET:
+				$location = Http::rebuildGetURI($location, $params);
+				break;
+			case Http::METHOD_POST:
+			case Http::METHOD_PUT:
+			default:
+				if($params)
+					$options[CURLOPT_POSTFIELDS] = http_build_query($params);
+		}
+		return $options;
+	}
+
+	public static function exec($curl, array &$options=[]) {
+		// set options
+		curl_setopt_array($curl, $options);
+
+		// send
+		return curl_exec($curl);
+	}
+
+	public static function parseResponse($curl, $responsed) : Response {
+		$info = curl_getinfo($curl);
+		$resp = null;
+		// on OK:
+		if($responsed!==false) {
+			$resp = new Response($responsed, $info);
+		} else {
+			$err = curl_error($curl);
+			// set header parsing to 0
+			$info[cURL::KEY_INFO_HEADER_LENGTH] = '0';
+			$resp = new Response($err, $info);
+		}
+		return $resp;
+
 	}
 }
