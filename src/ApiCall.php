@@ -4,6 +4,7 @@ class ApiCall {
 	// __get, __set magic trait
 	use cURLOptionMagic;
 
+	protected $_location;
 	protected $_params;
 	protected $_options;
 
@@ -41,7 +42,6 @@ class ApiCall {
 		cURL::setMethodOptions($method, $this->_options);
 		// then params
 		cURL::setLocationParams($method, $this->_options, $this->_location, $this->_params);
-		$this->_options[CURLOPT_URL] = $this->_location;
 		
 		// build request for later use
 		$this->_request = new Request($this->_options);
