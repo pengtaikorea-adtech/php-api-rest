@@ -444,15 +444,14 @@ class cURL {
 
 	public static function converts(array $options) :array {
 		$convertKey = self::class.'::key';
-		return array_reduce(array_keys($options), 
-			function($g, $opt) use($options, $convertKey) {
-				if(gettype($opt) != 'integer') {
-					$opt = $convertKey($opt);
-				}
-				$g[$opt] = $options[$key];
-				return $g;
-			}, 
-			[]);
+		$sets = [];
+		foreach($options as $ok=>$ov) {
+			$key = static::key($ok);
+			if(0<$key && static::validate($ok, $ov)) {
+				$sets[$key] = $ov;
+			}
+		}
+		return $sets;
 	}
 
 	public static function exists(string $option) :bool {
@@ -463,7 +462,7 @@ class cURL {
 	public static function validate(string $option, $value) :bool {
 		$opt = static::parseKey($option);
 		if(array_key_exists($option, static::OPTIONS)) {
-			return static::OPTIONS($option) == gettype($value);
+			return static::OPTIONS[$option] == gettype($value);
 		} 
 		return false;
 	}
@@ -506,6 +505,7 @@ class cURL {
 				if($params)
 					$options[CURLOPT_POSTFIELDS] = http_build_query($params);
 		}
+		$options[CURLOPT_URL] = $location;
 		return $options;
 	}
 
