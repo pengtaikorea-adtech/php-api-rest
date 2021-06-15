@@ -1,6 +1,9 @@
 <?php namespace ApiRest;
 
 class Request {
+	// __get, __set magic trait
+	use cURLOptionMagic;
+	
 	// cookie cache
 	protected $_cookies;
 	protected $_options;
@@ -81,4 +84,13 @@ class Request {
 			unset($this->_cookie[$key]);
 		}
 	}
+
+	public function __get($key) {
+		return cURL::getOption($this->_options, $key);
+	}
+	
+	public function __set($key, $value) {
+		cURL::setOption($this->_options, $key);
+	}
+
 }

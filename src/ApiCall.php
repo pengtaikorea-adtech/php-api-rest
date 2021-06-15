@@ -1,6 +1,9 @@
 <?php namespace ApiRest;
 
 class ApiCall {
+	// __get, __set magic trait
+	use cURLOptionMagic;
+
 	protected $_location;
 	protected $_params;
 	protected $_options;
@@ -29,30 +32,7 @@ class ApiCall {
 		}
 	}
 
-	public function __get($name) {
-		$key = cURL::Key($name);
-		// valid key
-		if($key!=0) {
-			if(array_key_exists($key, $this->_options)) {
-				return $this->_options[$key];
-			}
-			return null;
-		} 
-		throw new \MemberAccessException(sprintf("Option %s not exists", $name));
-	}
-
-	public function __set($name, $value) {
-		$key = cURL::Key($name);
-		// key validity
-		if($key!=0 && !array_key_exists($key, cURL::SINGLE_DEFAULTS)) {
-			if($value==null && array_key_exists($key, $this->_options)) {
-				delete($this->_options[$key]);
-			} else {
-				$this->_options[$key] = $value;
-			}
-		} 
-		throw new \MemberAccessException(sprintf("Option %s not exists", $name));
-	}
+	
 
 	/** 
 	 * common http sending request

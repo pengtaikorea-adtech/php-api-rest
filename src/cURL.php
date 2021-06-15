@@ -424,6 +424,24 @@ class cURL {
 		}
 	}
 
+	public static function getOption(array &$options, string $key) {
+		if(static::exists($key)) {
+			return $options[$key] ?? null;
+		}
+		// TODO exception handling
+	}
+
+	public static function setOption(array &$options, string $key, $value) {
+		if(static::exists($key)) {
+			if(static::validate($key, $value)) {
+				$options[$key] = $value;
+				return $options;
+			}
+			// TODO exception handling
+		}
+		// TODO exception handling
+	}
+
 	public static function converts(array $options) :array {
 		$convertKey = self::class.'::key';
 		return array_reduce(array_keys($options), 
@@ -435,6 +453,11 @@ class cURL {
 				return $g;
 			}, 
 			[]);
+	}
+
+	public static function exists(string $option) :bool {
+		$key = static::parseKey($option);
+		return array_key_exists($key, static::OPTIONS);
 	}
 
 	public static function validate(string $option, $value) :bool {

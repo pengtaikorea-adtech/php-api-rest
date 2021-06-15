@@ -92,6 +92,21 @@ class Http {
 		return $rets;
 	}
 
+	public static function spliceHeaders(array &$headers, string $key, int $count=1) :array {
+		$pattern = static::headerSearchPattern($key);
+		$removed = 0;
+		foreach($headers as $ln=>$entity) {
+			if(preg_match($pattern, $entity)) {
+				unset($headers[$ln]);
+				$removed += 1;
+				if(0<$count && $count<=$removed) {
+					break;
+				}
+			}
+		}
+		return $headers;
+	}
+
 
 
 	/**
@@ -108,6 +123,13 @@ class Http {
 			}
 		}
 		return $cookies;
+	}
+
+	public static function stringifyCookies(array $cookies) :string {
+		return implode("; ", array_map(function($ck) use($cookies) {
+			$value = $cookies[$ck];
+			return "$ck=$value";
+		}, array_keys($cookies)));
 	}
 
 	/**

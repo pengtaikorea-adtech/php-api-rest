@@ -95,4 +95,22 @@ class HttpTest extends TestCase {
 		$this->true(array_key_exists($eKey, $cookies));
 		$this->equals($cookies[$eKey], $eVal);
 	}
+
+	public function testStringifyCookies() {
+		$cookies = [
+			'key1'=>'v1',
+			'key2'=>'v2',
+		];
+		$cookieString = Http::stringifyCookies($cookies);
+		$this->true(is_string($cookieString));
+		$this->true(0<strlen($cookieString));
+		$this->true(0<preg_match("/key1=v1/", $cookieString));
+		$this->true(0<preg_match("/key2=v2/", $cookieString));
+		$actuals = Http::parseCookie($cookieString);
+		$this->equals(count($cookies), count($actuals));
+		foreach($cookies as $ck=>$cv) {
+			$this->true(array_key_exists($ck, $cookies));
+			$this->equals($cookies[$ck], $cv);
+		}
+	}
 }

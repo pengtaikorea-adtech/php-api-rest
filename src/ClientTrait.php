@@ -1,13 +1,13 @@
 <?php namespace ApiRest;
 
 trait ClientTrait {
+	// __get, __set magic trait
+	use cURLOptionMagic;
 
 	protected static $__singleton;
 
 	protected $_session;
 	protected $_options;
-	protected $_headers;
-	protected $_cookies;
 	protected $_histories;
 
 	// const API_HOST
@@ -16,6 +16,9 @@ trait ClientTrait {
 	 * 
 	 */
 	protected abstract static function endpoint(string $path) :string;
+	protected static function endpointWithHost(string $host, string $path) :string {
+		return sprintf("%s/%s", rtrim($host, '/'), ltrim($path, '/'));
+	}
 
 	protected static function maxHistories() :int { return 20; }
 
@@ -30,7 +33,7 @@ trait ClientTrait {
 		return self::$__singleton;
 	}
 
-	public function __construct(array $options) {
+	public function __construct(array $options=[]) {
 		$this->init($options);
 	}
 
@@ -41,14 +44,11 @@ trait ClientTrait {
 			$options[$key] = $val;
 		}
 		$this->_options = $options;
-		// concurrent headers, cookies
-		$this->_headers = Http::parseHeader($options[CURLOPT_HTTPHEADER] ?? "");
-		$this->_cookies = Http::parseCookie($options[CURLOPT_COOKIE] ?? "");
 		$this->_histories = [];
 	}
 
 	public function get(string $path, array $params=[]) {
-		$location = Http::rebuildGetURI(static::API_HOST.$path, $params);
+		$location = self::endpoint($path);
 		return $this->send(Http::METHOD_GET, $path);
 	}
 
@@ -66,12 +66,7 @@ trait ClientTrait {
 
 		// alter the request
 		$this->beforeSend($req);
-
-		// update options derived from reqeust:
-		$this->_options[CURLOPT_HTTPHEADER] = $req->headers();
-		$this->_options[CURLOPT_COOKIE] = $req->cookies();
-		// $this->_options[CURLOPT_URL] = $this->endpoint($path);
-
+		
 		// method derivative
 		cURL::setMethodOptions($method, $this->_options);
 
@@ -84,6 +79,10 @@ trait ClientTrait {
 		
 		// parse
 		$response = cURL::parseResponse($this->_session, $responsed);
+		// update cookie
+		foreach($response->cookies() as $ck=>$cv) {
+			$this->_cookies[$ck] = $cv;
+		}
 
 		// appending history
 		$history = [$req, $resp];
@@ -94,6 +93,62 @@ trait ClientTrait {
 		}
 
 		return $this->onResponsed($req, $resp);
+	}
+
+	public function appendHeader(string $key, string $value) {
+		$headers = $this->headers();
+		Http::appendHeader($headers, $key, $value);
+		$this->_options[CURLOPT_HTTPHEADER] = $headers;
+	}
+
+	public function removeHeader(string $key, int $counts=1) {
+		$headers = $this->headers();
+		$headers = Http::spliceHeaders($headers, $key, $counts);
+		$this->_options[CURLOPT_HTTPHEADER] = $headers;
+	}
+
+	public function findHeader(string $key) {
+		$headers = $this->headers();
+		return Http::findHeader($headers, $key);
+	}
+
+	public function searchHeaders(string $key) {
+		$headers = $this->headers();
+		return Http::searchHeaders($headers, $key);
+	}
+
+	public function headers() {
+		return $this->_options[CURLOPT_HTTPHEADER] ?? [];
+	}
+
+	public function cookies() {
+		return Http::parseCookie($this->_options[CURLOPT_COOKIE] ?? "");
+	}
+
+	public function options() {
+		return $this->_options;
+	}
+
+	public function getCookie(string $key) :?string {
+		$cookies = $this->cookies();
+		return $cookies[$key] ?? "";
+	}
+
+	public function setCookie(string $key, string $value) {
+		$cookies = $this->cookies();
+		$cookies[$key] = $value;
+		$this->_options[CURLOPT_COOKIE] = Http::stringifyCookies($cookies);
+	}
+
+	public function removeCookie(string $key) :bool {
+		$cookies = $this->cookies();
+		if(array_key_exists($key, $cookies)) {
+			unset($cookies[$key]);
+			$this->_options[CURLOPT_COOKIE] = Http::stringifyCookies($cookies);
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 	protected abstract function beforeSend(Request &$req);

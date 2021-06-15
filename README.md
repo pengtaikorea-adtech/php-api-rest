@@ -137,23 +137,29 @@ Singleton, or Dependency injection, applicable many designs with trait setup
 		// trait requisitives
 		const API_HOST = "https://api.service"
 
+		public static function endpoint(string $path) :string {
+			return static::API_HOST."/$path";
+		}
+
 		/** common settings **/
 		public function __construct(array $options) {
 			// common initialize (curl session, settings, etc...)
 			$this->init();
+
+			// common headers
+			$this->appendHeader($key, $value);
+			// cookies started
+			$this->setCookie($key, $value);
 		}
 
 		/** implementation of ApiClient trait abstractions **/
 		// before sending the request, setup middleware
 		protected function beforeSend(Request &$req) {
-			// set headers..
-			$req->headers([]);
-			//  - or single value
-			$req->header($headerKey, $value);
+			// common headers are already set on $this.
+			// $req->header will be applied only on this request.
+			$req->appendHeader($headerKey, $value);
 			// set cookies, ditto..
-			$req->cookies([]);
-
-			// 
+			$req->setCookie($cookieKey, $value);
 		}
 
 		// after response recieved, parsing middleware
@@ -161,7 +167,7 @@ Singleton, or Dependency injection, applicable many designs with trait setup
 			// throw new error if needed...
 			if($resp->ok()) {
 				// parsing values
-				if($req->matching("/pattern/")) {
+				if(preg_match("/pattern/", $req->location()) {
 					// 
 					return new SomeApiResourceModel($resp->aKey, $resp->data, ...);
 				}
