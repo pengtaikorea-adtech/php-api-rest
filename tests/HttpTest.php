@@ -20,17 +20,6 @@ class HttpTest extends TestCase {
 		$this->equals(trim($match['val']), 'text/plain');
 	}
 
-	public function testFindHeaderKeyRegexp() {
-		$key = "hello";
-		$pattern = Http::headerSearchPattern($key);
-		// exact match
-		$this->true(preg_match($pattern, "hello: world"));
-		// case insensitivity
-		$this->true(preg_match($pattern, "Hello: world"));
-		// case insensitivity + blank
-		$this->true(preg_match($pattern, "Hello :   world"));
-	}
-
 	public function testFindHeaderKey() {
 		$headers = [
 			"Hello: World",
@@ -42,8 +31,6 @@ class HttpTest extends TestCase {
 		// blank
 		$there = Http::findHeader($headers, "hi");
 		$this->equals($there, "there");
-
-
 	}
 
 	public function testParseHeader() {
@@ -56,9 +43,11 @@ class HttpTest extends TestCase {
 			$this->equals(count($parsed), count($expected));
 
 			foreach($parsed as $j=>$s) {
-				$this->true(count($s)==2);
-				$this->true(array_key_exists($s[0], $expected));
-				$this->equals($s[1], $expected[$s[0]]);
+				[$k, $v] = explode(":", $s);
+				$k = strtolower(trim($k));
+				$v = trim($v);
+				$this->true(array_key_exists($k, $expected));
+				$this->equals($v, $expected[$k]);
 			}
 		}
 	}

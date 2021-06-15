@@ -22,12 +22,42 @@ class RequestTest extends TestCase {
 	}
 
 	public function testRequestLocation() {
-		$req = new Request(static::testLocation);
+		$req = new Request([
+			CURLOPT_URL=>static::testLocation
+		]);
+		$this->equals(static::testLocation, $req->location());
+	}
+
+	public function testRequestSetLocation() {
+		$req = new Request();
+		$req->setLocation(static::testLocation);
 		$this->equals(static::testLocation, $req->location());
 	}
 
 	public function testRequestHeaders() {
-		$req = new Request('', static::testHeaders);
+		// setup headers
+		$headers = [];
+		foreach(static::testHeaders as $hk=>$hv) {
+			array_push($headers, "$hk: $hv");
+		}
+		$req = new Request([CURLOPT_HTTPHEADER=>$headers]);
+		$this->equals(count(static::testHeaders), count($req->headers()));
+
+		foreach(static::testHeaders as $k=>$v) {
+			$this->equals($v, $req->header($k));
+		}
+
+		$this->true($req->header('')==null);
+	}
+
+	public function testRequestAppendHeaders() {
+
+		$req = new Request([
+			CURLOPT_URL=>static::testLocation,
+		]);
+		foreach(static::testHeaders as $hk=>$hv) {
+			$req->appendHeader($hk, $hv);
+		}
 
 		$this->equals(count(static::testHeaders), count($req->headers()));
 
@@ -39,7 +69,9 @@ class RequestTest extends TestCase {
 	}
 
 	public function testRequestCookieArray() {
-		$req = new Request('', null, static::testCookies);
+		$req = new Request();
+		$req->setCookies(static::testCookies);
+
 		$this->equals(count(static::testCookies), count($req->cookies()));
 
 		foreach(static::testCookies as $k=>$v) {
@@ -50,7 +82,9 @@ class RequestTest extends TestCase {
 	}
 
 	public function testRequestCookieText() {
-		$req = new Request('', null, static::testCookiesText);
+		$req = new Request([
+			CURLOPT_COOKIE => static::testCookiesText,	
+		]);
 		$this->equals(count(static::testCookies), count($req->cookies()));
 
 		foreach(static::testCookies as $k=>$v) {

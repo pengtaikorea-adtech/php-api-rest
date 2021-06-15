@@ -28,7 +28,7 @@ class Http {
 	const URL_USER = 'user';
 	const URL_PASS = 'pass';
 
-	const HEADER_PATTERN = '/^\s*(?<key>.+):(?<val>.*)$/';
+	const HEADER_PATTERN = '/^\s*(?<key>[^:]+)\s*:(?<val>.*)$/';
 	const COOKIE_PATTERN = '/^(?<key>.+)=(?<val>.*)$/';
 	const SETCOOKIE_PATTERN = '/^(?<key>[^;=]+)=(?<val>[^;]*);?/';
 
@@ -43,7 +43,7 @@ class Http {
 			if(preg_match(static::HEADER_PATTERN, trim($line), $matches)) {
 				$key = trim($matches['key'] ?? '');
 				$val = trim($matches['val'] ?? '');
-				array_push($headers, [$key, $val]);
+				array_push($headers, "$key: $val");
 			}
 		}
 		return $headers;
@@ -66,7 +66,7 @@ class Http {
 	/**
 	 * find a (first) value that matches $key
 	 */
-	public static function findHeader(array $headers, string $key) :string {
+	public static function findHeader(array $headers, string $key) :?string {
 		$pattern = static::headerSearchPattern($key);
 		$match = [];
 		foreach($headers as $ln=>$entity) {
@@ -86,7 +86,7 @@ class Http {
 		$pattern = static::headerSearchPattern($key);
 		foreach($headers as $ln=>$entity) {
 			if(preg_match($pattern, $entity, $match)) {
-				array_push(trim($match['val']));
+				array_push($rets, trim($match['val']));
 			}
 		}
 		return $rets;

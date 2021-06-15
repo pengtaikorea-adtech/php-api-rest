@@ -8,24 +8,24 @@ class Response {
 	protected $_cookies;
 	protected $_json;
 
-	public function __construct(string $response='', array $info=[]) {
+	public function __construct(string $body='', array $info=[]) {
 		$headerlen = intval($info[cURL::KEY_INFO_HEADER_LENGTH] ?? '0');
 		$this->_status = intval($info[cURL::KEY_INFO_STATUS] ?? Http::STATUS_OK);
-		$this->_body = substr($response, $headerlen);
+		$this->_body = substr($body, $headerlen);
 		$this->_info = $info;
 
 		// build headers array
-		$headerText = substr($response, 0, $headerlen);
+		$headerText = substr($body, 0, $headerlen);
 		$this->_headers = Http::parseHeader($headerText);
 
 		// build cookies array
-		$cookieText = $this->_headers['cookie'] ?? '';
+		$cookieText = $this->header('cookie') ?? '';
+		$this->_cookies = Http::parseCookie($cookieText);
+
 		// appending responsed cookies
 		foreach($this->header('set-cookie', true) ?? [] as $i=>$cookie) {
-
+			Http::loadSetCookie($cookie, $this->_cookies);
 		}
-		
-		$this->_cookies = Http::parseCookie($cookieText);
 	}
 
 	public function status() :int {
@@ -75,20 +75,11 @@ class Response {
 	 * @return mixed header value, null if the key not exists.
 	 */
 	public function header(string $key, bool $multiple=false) {
-		$_key = strtolower($key);
-		$rets = null;
-		foreach($this->_headers as $i=>$header) {
-			if($header[0] == $_key) {
-				if(!$multiple) {
-					return $header[1];
-				} else {
-					if(!$rets) { $rets = []; }
-					array_push($rets, $header[1]);
-				}
-			}
+		if($multiple) {
+			return Http::searchHeaders($this->_headers, $key);
+		} else {
+			return Http::findHeader($this->_headers, $key);
 		}
-
-		return $multiple ? $rets : null;
 	}
 
 	/**

@@ -5,19 +5,23 @@ class Request {
 	protected $_cookies;
 	protected $_options;
 
-	public function __construct(array $options) {
-		$this->_options = $options;
+	public function __construct(?array $options=null) {
+		$this->_options = $options ?? [];
 	}
 
-	public function location():string {
-		return $this->_options[CURLOPT_URL];
+	public function location():?string {
+		return $this->_options[CURLOPT_URL] ?? null;
+	}
+
+	public function setLocation(string $location) {
+		$this->_options[CURLOPT_URL] = $location;
 	}
 
 	public function headers():array {
-		return $this->_options[CURLOPT_HTTPHEADER];
+		return $this->_options[CURLOPT_HTTPHEADER] ?? [];
 	}
 
-	public function header(string $key) :string {
+	public function header(string $key) :?string {
 		return Http::findHeader($this->headers(), $key);
 	}
 
@@ -26,7 +30,10 @@ class Request {
 	}
 
 	public function appendHeader(string $key, string $value) {
-		array_push($this->_options[CURLOPT_HTTPHEADER], "$key: $value");
+		$headers = $this->_options[CURLOPT_HTTPHEADER] ?? [];
+
+		array_push($headers, "$key: $value");
+		$this->_options[CURLOPT_HTTPHEADER] = $headers;
 	}
 
 	public function spliceHeader(string $key, ?string $value=null) {
@@ -45,7 +52,9 @@ class Request {
 
 	public function cookies():array {
 		if(!$this->_cookies) {
-			$this->_cookies = Http::parseCookie($this->_options[CURLOPT_COOKIE]) ?? [];
+			$this->_cookies = array_key_exists(CURLOPT_COOKIE, $this->_options) 
+				? Http::parseCookie($this->_options[CURLOPT_COOKIE])
+				: [];
 		}
 		return $this->_cookies;
 	}
@@ -55,11 +64,21 @@ class Request {
 		return $cookies[$key] ?? null;
 	}
 
+	public function setCookies(array $cookies) {
+		$this->cookies();
+		foreach($cookies as $ck=>$cv) {
+			$this->_cookies[$ck] = $cv;
+		}
+	}
+
 	public function setCookie(string $key, string $value)  {
+		$this->cookies();
 		$this->_cookies[$key] = $value;
 	}
 
 	public function unsetCookie(string $key) {
-		unset($this->_cookie[$key]);
+		if(is_array($this->_cookies) && array_key_exists($key, $this->_cookies)) {
+			unset($this->_cookie[$key]);
+		}
 	}
 }
