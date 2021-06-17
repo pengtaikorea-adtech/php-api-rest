@@ -151,9 +151,9 @@ trait ClientTrait {
 		}
 	}
 
-	protected abstract function beforeSend(Request &$req);
+	protected abstract function beforeSend(&$req);
 
-	protected abstract function onResponsed(Request $req, Response $resp);
+	protected abstract function onResponsed($req, $resp);
 
 
 
