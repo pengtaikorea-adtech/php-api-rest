@@ -48,7 +48,7 @@ trait ClientTrait {
 	}
 
 	public function get(string $path, array $params=[]) {
-		return $this->send(Http::METHOD_GET, $location);
+		return $this->send(Http::METHOD_GET, $path, $params);
 	}
 
 	public function post(string $path, array $params=[]) {
