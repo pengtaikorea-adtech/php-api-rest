@@ -20,6 +20,10 @@ class Request {
 		$this->_options[CURLOPT_URL] = $location;
 	}
 
+	public function setParam(string $key, $value) {
+
+	}
+
 	public function headers():array {
 		return $this->_options[CURLOPT_HTTPHEADER] ?? [];
 	}

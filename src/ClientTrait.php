@@ -49,7 +49,7 @@ trait ClientTrait {
 
 	public function get(string $path, array $params=[]) {
 		$location = self::endpoint($path);
-		return $this->send(Http::METHOD_GET, $path);
+		return $this->send(Http::METHOD_GET, $location);
 	}
 
 	public function post(string $path, array $params=[]) {
@@ -65,7 +65,7 @@ trait ClientTrait {
 		$req = new Request($this->_options);
 
 		// alter the request
-		$this->beforeSend($req);
+		$this->beforeSend($req, $params);
 		
 		// method derivative
 		cURL::setMethodOptions($method, $this->_options);
@@ -151,7 +151,7 @@ trait ClientTrait {
 		}
 	}
 
-	protected abstract function beforeSend(&$req);
+	protected abstract function beforeSend(&$req, &$params);
 
 	protected abstract function onResponsed($req, $resp);
 
