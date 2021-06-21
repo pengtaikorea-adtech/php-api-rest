@@ -38,7 +38,7 @@ trait ClientTrait {
 	}
 
 	public function init(array $options) {
-		$this->_session = curl_multi_init();
+		$this->_session = curl_init();
 		// overwrite MUST options
 		foreach(cURL::OPTION_DEFAULTS as $key=>$val) {
 			$options[$key] = $val;
@@ -78,21 +78,21 @@ trait ClientTrait {
 		$resp = cURL::exec($this->_session, $this->_options);
 		
 		// parse
-		$response = cURL::parseResponse($this->_session, $responsed);
+		$response = cURL::parseResponse($this->_session, $resp);
 		// update cookie
 		foreach($response->cookies() as $ck=>$cv) {
 			$this->_cookies[$ck] = $cv;
 		}
 
 		// appending history
-		$history = [$req, $resp];
+		$history = [$req, $response];
 		array_push($this->_histories, $history);
 		$historyLimits = self::maxHistories();
 		while($historyLimits < count($this->_histories)) {
 			array_shift($this->_histories);
 		}
 
-		return $this->onResponsed($req, $resp);
+		return $this->onResponsed($req, $response);
 	}
 
 	public function appendHeader(string $key, string $value) {
