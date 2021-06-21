@@ -48,7 +48,6 @@ trait ClientTrait {
 	}
 
 	public function get(string $path, array $params=[]) {
-		$location = self::endpoint($path);
 		return $this->send(Http::METHOD_GET, $location);
 	}
 
