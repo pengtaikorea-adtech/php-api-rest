@@ -67,7 +67,7 @@ trait ClientTrait {
 		$this->beforeSend($req, $params);
 		
 		// method derivative
-		cURL::setMethodOptions($method, $this->_options);
+		cURL::setMethodOptions($method, $this->_options ??  []);
 
 		// finalize with location 
 		$location = $this->endpoint($path);
