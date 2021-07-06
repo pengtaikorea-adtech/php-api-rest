@@ -60,6 +60,10 @@ trait ClientTrait {
 	}
 
 	public function send(string $method, string $path, array $params=[]) {
+		// initialize
+		if(!$this->_session) {
+			$this->init($this->_options ?? []);
+		}
 		// build http request for later
 		$req = new Request($this->_options);
 
@@ -67,7 +71,7 @@ trait ClientTrait {
 		$this->beforeSend($req, $params);
 		
 		// method derivative
-		cURL::setMethodOptions($method, $this->_options ??  []);
+		cURL::setMethodOptions($method, $this->_options);
 
 		// finalize with location 
 		$location = $this->endpoint($path);
