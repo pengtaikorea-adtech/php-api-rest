@@ -151,7 +151,7 @@ class Http {
 	}
 
 	public static function buildURI(array $comps) {
-		$protocol = $comps[static::URL_PROTOCOL] ?? 'https';
+		$protocol = $comps[static::URL_PROTOCOL] ?? '';
 		$user = $comps[static::URL_USER] ?? '';
 		$pass = $comps[static::URL_PASS] ?? '';
 		$host = $comps[static::URL_HOSTNAME] ?? '';
@@ -161,9 +161,8 @@ class Http {
 		$hash = $comps[static::URL_HASH] ?? '';
 
 		return implode('', [
-			$protocol
+			$protocol ? $protocol.'://' : ''
 			,
-			'://',
 			// username & password
 			$user,
 			$pass ? ':' : '',
