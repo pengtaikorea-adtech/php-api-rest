@@ -154,9 +154,13 @@ trait ClientTrait {
 		}
 	}
 
-	protected abstract function beforeSend(&$req, &$params);
+	protected function beforeSend(&$req, &$params) {
+		return $req;
+	}
 
-	protected abstract function onResponsed($req, $resp);
+	protected function onResponsed($req, $resp) {
+		return $resp;
+	}
 
 
 

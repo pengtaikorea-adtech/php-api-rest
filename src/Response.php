@@ -29,12 +29,12 @@ class Response {
 	}
 
 	public function status() :int {
-		return $this->_status || $this->_info[cURL::KEY_INFO_STATUS];
+		return $this->_status ?? $this->_info[cURL::KEY_INFO_STATUS];
 	}
 
 	// status ok
 	public function ok() :bool {
-		return ($this->_status == Http::STATUS_OK);
+		return ($this->status() === Http::STATUS_OK);
 	}
 
 	/**
