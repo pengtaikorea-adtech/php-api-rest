@@ -1,8 +1,8 @@
 # QuickStart
 
-- [Single GET request](single-get-request)
-- [Single POST request](single-post-request)
-- [Simple Client](simple-client)
+- [Single GET request](#single-get-request)
+- [Single POST request](#single-post-request)
+- [Simple Client](#simple-client)
 
 ## Single GET request
 
