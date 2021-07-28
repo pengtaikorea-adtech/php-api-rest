@@ -93,8 +93,3 @@ function (ApiRest\Request $req, ApiRest\Response $resp) {
     } 
 }
 ```
-
-## Inheritance vs. Trait
-
-
-
